@@ -1,11 +1,18 @@
+const Promise = require('bluebird');
 const electron = require('electron')
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
+const nativeImage = require('electron').nativeImage
+const range = require("range");
+
+
 const path = require('path')
 const url = require('url')
+
+const sharp = require('sharp');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -37,7 +44,35 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', createWindow);
+const changeColor = (r) => {
+  const roundedCorners = new Buffer(
+    `<svg><rect x="0" y="0" width="200" height="200" rx="50" ry="50" fill="rgb(${r}, ${256-r}, ${256-r})"/></svg>`
+  );
+  const icon = sharp(roundedCorners);
+  icon.toBuffer().then(data => {
+    const ni = nativeImage.createFromBuffer(data)
+    app.dock.setIcon(ni);
+  })
+}
+
+const getBuffer = (r) => {
+  const roundedCorners = new Buffer(
+    `<svg><rect x="0" y="0" width="200" height="200" rx="50" ry="50" fill="rgb(${r}, ${256 - r}, ${256 - r})"/></svg>`
+  );
+  const icon = sharp(roundedCorners);
+  return icon.toBuffer();
+}
+
+Promise.map(range.range(0, 255), getBuffer).then(buffers => {
+  let i = 0;
+  setInterval(() => {
+    const ni = nativeImage.createFromBuffer(buffers[i])
+    app.dock.setIcon(ni);
+
+    if (i < 255) { i++ } else { i = 0 };
+  }, 33)
+});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
