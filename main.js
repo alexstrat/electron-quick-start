@@ -10,7 +10,7 @@ function createWindow () {
   mainWindow = new BrowserWindow({width: 800, height: 600})
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  mainWindow.loadURL('https://www.notion.so/Guides-FAQs-c17ecf17749d4dd09a0f42d2ce01fde0')
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -21,6 +21,10 @@ function createWindow () {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null
+  });
+
+  mainWindow.webContents.on('page-title-updated', (e, title) => {
+    console.log('PAge title is updated: ', title);
   })
 }
 
